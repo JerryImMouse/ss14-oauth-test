@@ -1,3 +1,5 @@
+using Content.Server._Jerry;
+using Content.Server._Jerry.Sponsors;
 using Content.Server.Acz;
 using Content.Server.Administration;
 using Content.Server.Administration.Logs;
@@ -105,6 +107,8 @@ namespace Content.Server.Entry
                 IoCManager.Resolve<GhostKickManager>().Initialize();
                 IoCManager.Resolve<ServerInfoManager>().Initialize();
                 IoCManager.Resolve<ServerApi>().Initialize();
+                IoCManager.Resolve<DiscordAuthManager>().Initialize();
+                IoCManager.Resolve<SponsorsManager>().Initialize();
 
                 _voteManager.Initialize();
                 _updateManager.Initialize();
