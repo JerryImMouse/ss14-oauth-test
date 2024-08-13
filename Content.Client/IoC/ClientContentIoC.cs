@@ -1,3 +1,4 @@
+using Content.Client._Jerry.DiscordAuth;
 using Content.Client.Administration.Managers;
 using Content.Client.Changelog;
 using Content.Client.Chat.Managers;
@@ -51,6 +52,7 @@ namespace Content.Client.IoC
             collection.Register<ISharedPlaytimeManager, JobRequirementsManager>();
             collection.Register<MappingManager>();
             collection.Register<DebugMonitorManager>();
+            collection.Register<DiscordAuthManager>(); // Jerry-Auth
         }
     }
 }
