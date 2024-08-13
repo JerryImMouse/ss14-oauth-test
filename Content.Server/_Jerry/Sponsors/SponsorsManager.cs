@@ -19,6 +19,7 @@ public sealed class SponsorsManager
     private readonly HttpClient _httpClient = new();
     private string _guildId = default!;
     private string _apiUrl = default!;
+    private string _apiKey = default!;
 
     private Dictionary<NetUserId, SponsorData> _cachedSponsors = new();
 
@@ -26,6 +27,7 @@ public sealed class SponsorsManager
     {
         _configuration.OnValueChanged(CCCVars.CCCVars.DiscordGuildID, s => _guildId = s, true);
         _configuration.OnValueChanged(CCCVars.CCCVars.DiscordApiUrl, s => _apiUrl = s, true);
+        _configuration.OnValueChanged(CCCVars.CCCVars.DiscordApiKey, (value) => _apiKey = value, true);
 
         _discordAuthManager.PlayerVerified += OnPlayerVerified;
         _netManager.Disconnect += OnDisconnect;
@@ -56,7 +58,7 @@ public sealed class SponsorsManager
 
     private async Task<List<string>?> GetRoles(NetUserId userId)
     {
-        var requestUrl = $"{_apiUrl}/roles?userid={userId}&guildid={_guildId}";
+        var requestUrl = $"{_apiUrl}/roles?userid={userId}&guildid={_guildId}&api_token={_apiKey}";
         var response = await _httpClient.GetAsync(requestUrl);
 
         if (!response.IsSuccessStatusCode)

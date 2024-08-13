@@ -11,6 +11,9 @@ public static class CCCVars
     public static readonly CVarDef<string> DiscordApiUrl =
         CVarDef.Create("jerry.discord_api_url", "http://127.0.0.1:2424/api", CVar.CONFIDENTIAL | CVar.SERVERONLY);
 
+    public static readonly CVarDef<string> DiscordApiKey =
+        CVarDef.Create("jerry.discord_api_key", "key", CVar.CONFIDENTIAL | CVar.SERVERONLY);
+
     /*
      * Sponsors
      */
