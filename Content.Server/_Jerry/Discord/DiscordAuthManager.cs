@@ -25,6 +25,7 @@ public sealed class DiscordAuthManager : IPostInjectInit
 
     private string _apiUrl = default!;
     private string _apiKey = default!;
+    private bool _enabled = false;
 
     private readonly HttpClient _httpClient = new();
     private readonly Dictionary<NetUserId, DiscordUserData> _cachedDiscordUsers = new();
@@ -37,6 +38,7 @@ public sealed class DiscordAuthManager : IPostInjectInit
 
     public void Initialize()
     {
+        _configuration.OnValueChanged(CCCVars.CCCVars.DiscordAuthEnabled, value => _enabled = value, true);
         _configuration.OnValueChanged(CCCVars.CCCVars.DiscordApiUrl, (value) => _apiUrl = value, true);
         _configuration.OnValueChanged(CCCVars.CCCVars.DiscordApiKey, (value) => _apiKey = value, true);
 
@@ -74,6 +76,13 @@ public sealed class DiscordAuthManager : IPostInjectInit
     {
         if (args.NewStatus != SessionStatus.Connected)
             return;
+
+        if (!_enabled)
+        {
+            PlayerVerified?.Invoke(this, args.Session);
+            return;
+        }
+
 
         var data = await IsVerified(args.Session.UserId);
         if (data is not null)

@@ -20,6 +20,7 @@ public sealed class SponsorsManager
     private string _guildId = default!;
     private string _apiUrl = default!;
     private string _apiKey = default!;
+    private bool _enabled = false;
 
     private Dictionary<NetUserId, SponsorData> _cachedSponsors = new();
 
@@ -28,6 +29,7 @@ public sealed class SponsorsManager
         _configuration.OnValueChanged(CCCVars.CCCVars.DiscordGuildID, s => _guildId = s, true);
         _configuration.OnValueChanged(CCCVars.CCCVars.DiscordApiUrl, s => _apiUrl = s, true);
         _configuration.OnValueChanged(CCCVars.CCCVars.DiscordApiKey, (value) => _apiKey = value, true);
+        _configuration.OnValueChanged(CCCVars.CCCVars.SponsorsEnabled, (value) => _enabled = value, true);
 
         _discordAuthManager.PlayerVerified += OnPlayerVerified;
         _netManager.Disconnect += OnDisconnect;
@@ -42,6 +44,9 @@ public sealed class SponsorsManager
 
     private async void OnPlayerVerified(object? sender, ICommonSession e)
     {
+        if (!_enabled)
+            return;
+
         var roles = await GetRoles(e.UserId);
         if (roles == null)
             return;
