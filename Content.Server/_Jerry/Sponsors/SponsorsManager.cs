@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Net;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -51,11 +52,13 @@ public sealed class SponsorsManager
         if (roles == null)
             return;
 
+        var isGiven = await IsGiven(e.UserId);
+
         var level = SponsorData.ParseRoles(roles);
         if (level == SponsorLevel.None)
             return;
 
-        var data = new SponsorData(level, e.UserId);
+        var data = new SponsorData(level, e.UserId, isGiven);
         _cachedSponsors.Add(e.UserId, data);
 
         _sawmill.Info($"{e.UserId} is sponsor now.\nUserId: {e.UserId}. Level: {Enum.GetName(data.Level)}:{(int)data.Level}");
@@ -85,6 +88,35 @@ public sealed class SponsorsManager
         return null;
     }
 
+    private async Task<bool> IsGiven(NetUserId userId)
+    {
+        var requestUrl = $"{_apiUrl}/is_given?userid={userId}&api_token={_apiKey}";
+        var response = await _httpClient.GetAsync(requestUrl);
+
+        return (int)response.StatusCode == 200;
+    }
+
+    public async Task SetGiven(NetUserId userId, bool given)
+    {
+        var requestUrl = $"{_apiUrl}/given?userid={userId}&given={(given ? 1 : 0)}&api_token={_apiKey}";
+        var response = await _httpClient.PostAsync(requestUrl, null);
+        if (!response.IsSuccessStatusCode)
+            _sawmill.Error($"Error setting given value for {userId}");
+    }
+
+    public async Task MakeWipe()
+    {
+        var requestUrl = $"{_apiUrl}/wipe_given?api_token={_apiKey}";
+        var response = await _httpClient.PostAsync(requestUrl, null);
+        if (!response.IsSuccessStatusCode)
+            _sawmill.Error("Error wiping given records.");
+
+        foreach (var data in _cachedSponsors)
+        {
+            data.Value.IsGiven = false;
+        }
+    }
+
     public bool TryGetSponsorData(NetUserId userId, [NotNullWhen(true)] out SponsorData? sponsorData)
     {
         return _cachedSponsors.TryGetValue(userId, out sponsorData);
@@ -111,14 +143,16 @@ public sealed class SponsorData
         return highestRole;
     }
 
-    public SponsorData(SponsorLevel level, NetUserId userId)
+    public SponsorData(SponsorLevel level, NetUserId userId, bool given)
     {
         Level = level;
         UserId = userId;
+        IsGiven = given;
     }
 
     public SponsorLevel Level;
     public NetUserId UserId;
+    public bool IsGiven;
 }
 
 public enum SponsorLevel
